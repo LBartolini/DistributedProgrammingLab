@@ -17,62 +17,57 @@ func NewMessageReader(reader io.Reader) *MessageReader {
 }
 
 // Read deserializes a Message from a stream.
-func (r *MessageReader) Read() (Command, error) {
-	messageType, err := r.reader.ReadString(' ')
+func (r *MessageReader) Read(writer *MessageWriter) (Command, error) {
+	message, err := r.reader.ReadString('\n')
 
-	messageType = strings.TrimSpace(messageType)
+	fields := strings.Fields(message)
 
-	if err != nil {
+	if err != nil || len(fields) == 0 {
 		return nil, err
 	}
 
+	messageType := fields[0]
+	fields = fields[1:]
+
 	switch messageType {
 	case "ls":
-		return NewLsCommand(), nil
+		return NewLsCommand(writer), nil
 	case "cat":
-		content, err := r.reader.ReadString('\n')
-
-		if err != nil {
-			return nil, err
+		if len(fields) == 0 {
+			return nil, ErrNotEnoughArguments
 		}
 
-		filename := strings.TrimSpace(content)
+		filename := strings.TrimSpace(fields[0])
 
-		return NewCatCommand(filename), nil
+		return NewCatCommand(writer, filename), nil
 	case "rm":
-		content, err := r.reader.ReadString('\n')
-
-		if err != nil {
-			return nil, err
+		if len(fields) == 0 {
+			return nil, ErrNotEnoughArguments
 		}
 
-		filename := strings.TrimSpace(content)
+		filename := strings.TrimSpace(fields[0])
 
-		return NewRmCommand(filename), nil
+		return NewRmCommand(writer, filename), nil
 
 	case "get":
-		content, err := r.reader.ReadString('\n')
-
-		if err != nil {
-			return nil, err
+		if len(fields) == 0 {
+			return nil, ErrNotEnoughArguments
 		}
 
-		filename := strings.TrimSpace(content)
+		filename := strings.TrimSpace(fields[0])
 
-		return NewGetCommand(filename), nil
+		return NewGetCommand(writer, filename), nil
 
 	case "info":
-		content, err := r.reader.ReadString('\n')
-
-		if err != nil {
-			return nil, err
+		if len(fields) == 0 {
+			return nil, ErrNotEnoughArguments
 		}
 
-		filename := strings.TrimSpace(content)
+		filename := strings.TrimSpace(fields[0])
 
-		return NewInfoCommand(filename), nil
+		return NewInfoCommand(writer, filename), nil
 
 	default:
-		return nil, UnknownCommand
+		return nil, ErrUnknownCommand
 	}
 }

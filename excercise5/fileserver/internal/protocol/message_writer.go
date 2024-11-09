@@ -1,6 +1,7 @@
 package protocol
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -12,6 +13,6 @@ func NewMessageWriter(writer io.Writer) *MessageWriter {
 	return &MessageWriter{writer}
 }
 
-func (w *MessageWriter) Write(command Command) (n int, err error) {
-	return command.ExecuteAndSend(w)
+func (w *MessageWriter) Write(p []byte) (n int, err error) {
+	return fmt.Fprintf(w.writer, "%s\n>>>", p)
 }

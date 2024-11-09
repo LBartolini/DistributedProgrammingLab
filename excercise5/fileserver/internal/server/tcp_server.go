@@ -61,7 +61,7 @@ func (s *TcpChatServer) serve(client *client) {
 	msgReader := protocol.NewMessageReader(client.conn)
 
 	for {
-		command, err := msgReader.Read()
+		command, err := msgReader.Read(client.writer)
 
 		if err != nil && err != io.EOF {
 			log.Printf("Read error: %v\n", err)
@@ -73,7 +73,7 @@ func (s *TcpChatServer) serve(client *client) {
 
 		if command != nil {
 			log.Println("Executing")
-			command.ExecuteAndSend(client.writer)
+			command.ExecuteAndSend()
 		}
 	}
 }
