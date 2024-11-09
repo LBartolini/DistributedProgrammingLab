@@ -17,7 +17,7 @@ func NewMessageReader(reader io.Reader) *MessageReader {
 }
 
 // Read deserializes a Message from a stream.
-func (r *MessageReader) Read() (Message, error) {
+func (r *MessageReader) Read() (Command, error) {
 	messageType, err := r.reader.ReadString(' ')
 
 	messageType = strings.TrimSpace(messageType)
@@ -27,44 +27,50 @@ func (r *MessageReader) Read() (Message, error) {
 	}
 
 	switch messageType {
-	case "SEND":
+	case "ls":
+		return NewLsCommand(), nil
+	case "cat":
 		content, err := r.reader.ReadString('\n')
 
 		if err != nil {
 			return nil, err
 		}
 
-		content = strings.TrimSpace(content)
+		filename := strings.TrimSpace(content)
 
-		return SendMessage{content}, nil
-	case "NAME":
-		newName, err := r.reader.ReadString('\n')
-
-		if err != nil {
-			return nil, err
-		}
-
-		newName = strings.TrimSpace(newName)
-
-		return ChangeNameMessage{newName}, nil
-	case "MESSAGE":
-		author, err := r.reader.ReadString(' ')
-
-		if err != nil {
-			return nil, err
-		}
-
-		author = strings.TrimSpace(author)
-
+		return NewCatCommand(filename), nil
+	case "rm":
 		content, err := r.reader.ReadString('\n')
 
 		if err != nil {
 			return nil, err
 		}
 
-		content = strings.TrimSpace(content)
+		filename := strings.TrimSpace(content)
 
-		return NotifyMessage{author, content}, nil
+		return NewRmCommand(filename), nil
+
+	case "get":
+		content, err := r.reader.ReadString('\n')
+
+		if err != nil {
+			return nil, err
+		}
+
+		filename := strings.TrimSpace(content)
+
+		return NewGetCommand(filename), nil
+
+	case "info":
+		content, err := r.reader.ReadString('\n')
+
+		if err != nil {
+			return nil, err
+		}
+
+		filename := strings.TrimSpace(content)
+
+		return NewInfoCommand(filename), nil
 
 	default:
 		return nil, UnknownCommand

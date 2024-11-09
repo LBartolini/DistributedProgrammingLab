@@ -2,65 +2,89 @@ package protocol
 
 import (
 	"errors"
+	"os/exec"
 )
 
-type Message interface {
-	Send(writer *MessageWriter) error
-}
+const BASE_PATH = "dbox"
 
-type Command struct {
-	operation string
-	fileName  string
+type Command interface {
+	ExecuteAndSend(writer *MessageWriter) (n int, err error)
 }
 
 //-------
 
-type lsCommand struct {
-	command Command
+type LsCommand struct{}
+
+func NewLsCommand() Command {
+	return &LsCommand{}
 }
 
-func (r *lsCommand) Send(writer *MessageWriter) error {
-	return nil
-}
+func (r *LsCommand) ExecuteAndSend(writer *MessageWriter) (n int, err error) {
+	out, err := exec.Command("ls", BASE_PATH).Output()
 
-//-------
+	if err != nil {
+		return 0, err
+	}
 
-type catCommand struct {
-	command Command
-}
-
-func (r *catCommand) Send(writer *MessageWriter) error {
-	return nil
-}
-
-//-------
-
-type rmCommand struct {
-	command Command
-}
-
-func (r *rmCommand) Send(writer *MessageWriter) error {
-	return nil
+	return writer.writer.Write(out)
 }
 
 //-------
 
-type getCommand struct {
-	command Command
+type CatCommand struct {
+	filename string
 }
 
-func (r *getCommand) Send(writer *MessageWriter) error {
-	return nil
+func NewCatCommand(filename string) Command {
+	return &CatCommand{filename}
+}
+
+func (r *CatCommand) ExecuteAndSend(writer *MessageWriter) (n int, err error) {
+	return 0, nil
 }
 
 //-------
 
-type infoCommand struct {
-	command Command
+type RmCommand struct {
+	filename string
 }
 
-func (r *infoCommand) Send(writer *MessageWriter) error {
-	return nil
+func NewRmCommand(filename string) Command {
+	return &RmCommand{filename}
 }
+
+func (r *RmCommand) ExecuteAndSend(writer *MessageWriter) (n int, err error) {
+	return 0, nil
+}
+
+//-------
+
+type GetCommand struct {
+	filename string
+}
+
+func NewGetCommand(filename string) Command {
+	return &GetCommand{filename}
+}
+
+func (r *GetCommand) ExecuteAndSend(writer *MessageWriter) (n int, err error) {
+	return 0, nil
+}
+
+//-------
+
+type InfoCommand struct {
+	filename string
+}
+
+func NewInfoCommand(filename string) Command {
+	return &InfoCommand{filename}
+}
+
+func (r *InfoCommand) ExecuteAndSend(writer *MessageWriter) (n int, err error) {
+	return 0, nil
+}
+
+//-------
 
 var UnknownCommand = errors.New("Unknown command")
