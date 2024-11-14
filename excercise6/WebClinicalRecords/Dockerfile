@@ -3,10 +3,11 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY main.go records.json ./
+COPY main.go  ./
 COPY internal ./internal
 COPY templates ./templates
+COPY records ./records
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./webclinicalrecords
+RUN go build -o ./webclinicalrecords
 EXPOSE 8080
 CMD [ "./webclinicalrecords" ]

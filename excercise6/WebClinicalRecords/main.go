@@ -6,14 +6,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const BASEDIR = "./records"
+
 func main() {
 	r := gin.Default()
-
 	r.LoadHTMLGlob("./templates/*")
 
-	r.GET("/ping", internal.PongRoute)
+	storage := internal.NewJSONStorage(BASEDIR)
+	routes := internal.NewMyRoutes(storage)
 
-	r.GET("/", internal.HomeRoute)
+	// Home
+	r.GET("/", routes.HomeRoute)
 
-	r.Run("0.0.0.0:8080") // listen and serve on 0.0.0.0:8080
+	// GET and POST for inserting a new record
+	r.GET("/insert", routes.InsertRecordRoute)
+	r.POST("/insert", routes.InsertRecordRoute)
+
+	// Get records of a specified patient
+	r.GET("/patient", routes.GetPatientRecordsRoute)
+
+	// Get record providing its ID
+	r.GET("/record", routes.GetRecordRoute)
+
+	r.Run("0.0.0.0:8080")
 }
