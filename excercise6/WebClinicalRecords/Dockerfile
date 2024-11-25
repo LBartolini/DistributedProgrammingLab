@@ -1,13 +1,7 @@
-FROM golang:1.22
+FROM golang:1.22-bookworm
 WORKDIR /app
-COPY go.mod go.sum ./
+COPY . ./
 RUN go mod download
-
-COPY main.go  ./
-COPY internal ./internal
-COPY templates ./templates
-COPY records ./records
-
-RUN go build -o ./webclinicalrecords
 EXPOSE 8080
-CMD [ "./webclinicalrecords" ]
+RUN go build -o ./webclinicalrecords
+CMD ["bash"]
